@@ -80,17 +80,15 @@ std::vector<bool> Game::conditionchecker()
 bool Game::satisfied()
 {
 	std::vector<bool> conditionsSatisfied = conditionchecker();
-	bool finishedGame = true;
 
 	for (bool conditionSatisfied : conditionsSatisfied)
 	{
 		if (!conditionSatisfied)
 		{
-			finishedGame = false;
-			break;
+			return false;
 		}
 	}
-	return finishedGame;
+	return true;
 }
 
 bool Game::condition1()

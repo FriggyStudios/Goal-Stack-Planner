@@ -2,17 +2,16 @@
 #include <ctime> 
 
 
-
 Handler::Handler(Game game)
 {
 	this->game = game;
 }
 
-
 Handler::~Handler()
 {
 }
 
+//Satisfies one unsatisifed goal
 bool Handler::Satisfy()
 {
 	if (game.satisfied())
@@ -58,19 +57,19 @@ bool Handler::Satisfy()
 	}
 	for (OperatorStorage opStorage : legalOperators)
 	{
-		gameTest = game;
+		gameTest = Game(game);
 		opStorage.op.Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2]);
 		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
 		if (conditionsSatisfiedTest[toSatisfy] == true)
 		{
-			opStorage.op.Operate(game.objects[opStorage.iterator1],gameTest.objects[opStorage.iterator2]);
+			opStorage.op.Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
 			return game.satisfied();
 		}
 	}
 	//Else Find illegal operator to satisfy unsatisfied goal state
 	for (OperatorStorage opStorage : illegalOperators)
 	{
-		gameTest = game;
+		gameTest = Game(game);
 		opStorage.op.Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
 		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
 		if (conditionsSatisfiedTest[toSatisfy] == true)
@@ -78,8 +77,38 @@ bool Handler::Satisfy()
 			toOperate.push_back(opStorage);
 		}
 	}
-	//Set function to be satisfied that operator legal, repeat (2)
+	while (true)
+	{
+		//Set function to be satisfied that operator legal, repeat (2)
+		//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
+		for (OperatorStorage opStorage : legalOperators)
+		{
+			gameTest = Game(game);
+			opStorage.op.Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2]);
+			bool physical;
+			if (toOperate.back().op.ValidOperator(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], physical))
+			{
+				opStorage.op.Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
+				for (int i = toOperate.size() - 1; i >= 0; i--)
+				{
+					toOperate[i].op.Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
+				}
+				return game.satisfied();
+			}
+		}
+		//Else Find illegal operator to satisfy unsatisfied goal state
+		for (OperatorStorage opStorage : illegalOperators)
+		{
+			gameTest = Game(game);
+			opStorage.op.Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
+			std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
+			if (conditionsSatisfiedTest[toSatisfy] == true)
+			{
+				toOperate.push_back(opStorage);
+			}
+		}
 
+	}
 	//If legal operators found to satisfy unsatisfied goal state, apply operators, repeat (1)
 
 	return game.satisfied();
