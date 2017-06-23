@@ -8,6 +8,9 @@ int main()
 	Handler handle = Handler(game);
 
 	while (!handle.Satisfy());
+	std::cout << "Finished";
+	int x;
+	std::cin >> x;
 
 	return 0;
 }

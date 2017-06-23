@@ -7,6 +7,12 @@ Operator::Operator()
 }
 
 
+Operator::Operator(Operator &op)
+{
+
+}
+
+
 Operator::~Operator()
 {
 }

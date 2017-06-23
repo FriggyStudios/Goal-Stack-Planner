@@ -8,12 +8,13 @@
 #include <vector>
 class Game
 {public:
-	std::vector<Object> objects;
-	std::vector<Operator> operators;
+	std::vector<Object*> objects;
+	std::vector<Operator*> operators;
 public:
 	Game();
 	Game(Game &game);
 	~Game();
+	Game& operator=(const Game& other);
 	std::vector<bool> conditionchecker();
 	bool satisfied();
 private:

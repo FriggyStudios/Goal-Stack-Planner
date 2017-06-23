@@ -10,20 +10,20 @@ PickUp::~PickUp()
 {
 }
 
-bool PickUp::ValidOperator(const Object& block1, const Object& block2, bool &physical)
+bool PickUp::ValidOperator(const Object* block1, const Object* block2, bool &physical)
 {
 	physical = true;
 	if (
-		block1.hand == true ||
-		block2.hand == false ||
-		block1.table == true ||
-		block2.table == true)
+		block1->hand == true ||
+		block2->hand == false ||
+		block1->table == true ||
+		block2->table == true)
 	{
 		physical = false;
 		return false;
 	}
-	if (block1.above == nullptr &&
-		block2.inHand == nullptr)
+	if (block1->above == NULL &&
+		block2->inHand == NULL)
 	{
 		return true;
 	}
@@ -31,18 +31,18 @@ bool PickUp::ValidOperator(const Object& block1, const Object& block2, bool &phy
 		return false;
 }
 
-void PickUp::Operate(Object& block1, Object& block2, bool test)
+void PickUp::Operate(Object* block1, Object* block2, bool test)
 {
 	bool physical;
-	if (test || ValidOperator(block1, block2,physical))
+	if (test || ValidOperator(block1, block2, physical))
 	{
-		if (block1.below != nullptr)
+		if (block1->below != NULL)
 		{
-			block1.below->above = nullptr;
-			block1.below = nullptr;
+			block1->below->above = NULL;
+			block1->below = NULL;
 		}
-		block1.inHand = &block2;
-		block2.inHand = &block1;
+		block1->inHand = block2;
+		block2->inHand = block1;
 	}
 	else
 		std::cerr << "PickUp Error";

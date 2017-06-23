@@ -2,7 +2,7 @@
 
 
 
-OperatorStorage::OperatorStorage(Operator op, int iterator1, int iterator2)
+OperatorStorage::OperatorStorage(Operator *op, int iterator1, int iterator2)
 {
 	this->op = op;
 	this->iterator1 = iterator1;

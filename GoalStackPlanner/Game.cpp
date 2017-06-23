@@ -3,58 +3,61 @@
 
 Game::Game()
 {
-	Hand hand = Hand();
-	Table table = Table();
-	Block A = Block();
-	Block B = Block();
-	Block C = Block();
+	Hand* hand = new Hand();
+	Table* table = new Table();
+	Block* A = new Block();
+	Block* B = new Block();
+	Block* C = new Block();
 
-	B.above = &A;
-	A.below = &B;
+	B->above = A;
+	A->below = B;
 	
-	objects = std::vector<Object>();
+	objects = std::vector<Object*>();
 	objects.push_back(A);
 	objects.push_back(B);
 	objects.push_back(C);
 	objects.push_back(hand);
 	objects.push_back(table);
 
-	operators = std::vector<Operator>();
-	operators.push_back(PickUp());
-	operators.push_back(PutDown());
+	operators = std::vector<Operator*>();
+	operators.push_back(new PickUp());
+	operators.push_back(new PutDown());
 }
 
 Game::Game(Game &game)
 {
-	operators = game.operators;
 
-	objects = std::vector<Object>();
+	operators = std::vector<Operator*>();
+	operators.push_back(new PickUp());
+	operators.push_back(new PutDown());
+
+	objects = std::vector<Object*>();
 	for (unsigned i = 0; i < game.objects.size()-2; i++)
 	{
-		objects.push_back(Block());
+		objects.push_back(new Block());
 	}
-	objects.push_back(Hand());
-	objects.push_back(Table());
+	objects.push_back(new Hand());
+	objects.push_back(new Table());
 	for (unsigned i = 0; i < game.objects.size() - 2; i++)
 	{
-		if (game.objects[i].above != nullptr)
+		if (game.objects[i]->above != nullptr)
 		{
 			for (unsigned j = 0; j < game.objects.size() - 2; j++)
 			{
-				if (game.objects[i].above == &game.objects[j])
+				if (game.objects[i]->above == game.objects[j])
 				{
-					objects[i].above = &objects[j];
+					objects[i]->above = objects[j];
 					break;
 				}
 			}
 		}
-		if (game.objects[i].below != nullptr)
+		if (game.objects[i]->below != nullptr)
 		{
 			for (unsigned j = 0; j < game.objects.size() - 2; j++)
 			{
-				if (game.objects[i].below == &game.objects[j])
+				if (game.objects[i]->below == game.objects[j])
 				{
-					objects[i].below = &objects[j];
+					objects[i]->below = objects[j];
 					break;
 				}
 			}
@@ -65,6 +68,64 @@ Game::Game(Game &game)
 
 Game::~Game()
 {
+	for (Object* obj : objects)
+	{
+		delete obj;
+	}
+}
+
+Game& Game::operator=(const Game& game)
+{
+	if (this == &game)
+		return (*this); // Taking care for self-assignment
+
+	for (Object* obj : objects)
+	{
+		delete obj;
+	}
+	for (Operator* op : operators)
+	{
+		delete op;
+	}
+
+	operators = std::vector<Operator*>();
+	operators.push_back(new PickUp());
+	operators.push_back(new PutDown());
+
+	objects = std::vector<Object*>();
+	for (unsigned i = 0; i < game.objects.size() - 2; i++)
+	{
+		objects.push_back(new Block());
+	}
+	objects.push_back(new Hand());
+	objects.push_back(new Table());
+	for (unsigned i = 0; i < game.objects.size() - 2; i++)
+	{
+		if (game.objects[i]->above != nullptr)
+		{
+			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			{
+				if (game.objects[i]->above == game.objects[j])
+				{
+					objects[i]->above = objects[j];
+					break;
+				}
+			}
+		}
+		if (game.objects[i]->below != nullptr)
+		{
+			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			{
+				if (game.objects[i]->below == game.objects[j])
+				{
+					objects[i]->below = objects[j];
+					break;
+				}
+			}
+		}
+	}
+
+	return (*this);
 }
 
 std::vector<bool> Game::conditionchecker()
@@ -93,8 +154,9 @@ bool Game::satisfied()
 
 bool Game::condition1()
 {
-	if (objects[1].below == nullptr &&
-		objects[1].above == &objects[2])
+	if (objects[1]->below == NULL &&
+		objects[1]->above == objects[2] &&
+		objects[1]->inHand == NULL)
 	{
 		return true;
 	}
@@ -102,8 +164,9 @@ bool Game::condition1()
 }
 bool Game::condition2()
 {
-	if (objects[2].below == &objects[1] &&
-		objects[2].above == nullptr)
+	if (objects[2]->below == objects[1] &&
+		objects[2]->above == NULL &&
+		objects[2]->inHand == NULL)
 	{
 		return true;
 	}
@@ -111,8 +174,9 @@ bool Game::condition2()
 }
 bool Game::condition3()
 {
-	if (objects[0].below == nullptr &&
-		objects[0].above == nullptr)
+	if (objects[0]->below == NULL &&
+		objects[0]->above == NULL &&
+		objects[0]->inHand == NULL)
 	{
 		return true;
 	}

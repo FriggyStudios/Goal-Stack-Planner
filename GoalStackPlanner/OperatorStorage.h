@@ -5,11 +5,11 @@
 class OperatorStorage
 {
 public:
-	Operator op;
+	Operator *op;
 	int iterator1;
 	int  iterator2;
 public:
-	OperatorStorage(Operator op, int iterator1, int iterator2);
+	OperatorStorage(Operator *op, int iterator1, int iterator2);
 	~OperatorStorage();
 };
 
