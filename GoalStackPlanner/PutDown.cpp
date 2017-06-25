@@ -49,6 +49,8 @@ void PutDown::Operate(Object* block1, Object* block2,bool test=false)
 		{
 			block1->below = NULL;
 		}
+		if (!test)
+			std::cout << "Put down " << block1->name << " onto " << block2->name << '\n';
 	}
 	else
 		std::cerr << "PutDown Error";

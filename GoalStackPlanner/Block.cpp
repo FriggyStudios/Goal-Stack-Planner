@@ -1,6 +1,6 @@
 #include "Block.h"
 
-Block::Block() : Object()
+Block::Block(std::string name) : Object(name)
 {
 	hand = false;
 	table = false;

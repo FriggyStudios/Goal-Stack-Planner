@@ -2,7 +2,7 @@
 
 
 
-Table::Table()
+Table::Table() : Object("table")
 { 
 	hand = false;
 	table = true;

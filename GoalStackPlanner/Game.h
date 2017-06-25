@@ -21,5 +21,6 @@ private:
 	bool condition1();
 	bool condition2();
 	bool condition3();
+	bool condition4();
 };
 

@@ -65,34 +65,40 @@ bool Handler::Satisfy()
 	std::vector<bool> conditionsSatisfied = game.conditionchecker();
 	srand((unsigned)time(0));
 	int toSatisfy;
-	while (true)
+	bool toOperateAdded = false;
+	while (!toOperateAdded)
 	{
-		toSatisfy = (rand() % conditionsSatisfied.size());
-		if (conditionsSatisfied[toSatisfy] == false)
+		while (true)
 		{
-			break;
+			toSatisfy = (rand() % conditionsSatisfied.size());
+			if (conditionsSatisfied[toSatisfy] == false)
+			{
+				break;
+			}
 		}
-	}
-	for (OperatorStorage opStorage : legalOperators)
-	{
-		gameTest = Game(game);
-		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
-		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
-		if (conditionsSatisfiedTest[toSatisfy] == true)
+		for (OperatorStorage opStorage : legalOperators)
 		{
-			opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
-			return game.satisfied();
+			gameTest = Game(game);
+			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
+			std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
+			if (conditionsSatisfiedTest[toSatisfy] == true)
+			{
+				opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
+				return game.satisfied();
+			}
 		}
-	}
-	//Else Find illegal operator to satisfy unsatisfied goal state
-	for (OperatorStorage opStorage : illegalOperators)
-	{
-		gameTest = Game(game);
-		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
-		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
-		if (conditionsSatisfiedTest[toSatisfy] == true)
+		//Else Find illegal operator to satisfy unsatisfied goal state
+		for (OperatorStorage opStorage : illegalOperators)
 		{
-			toOperate.push_back(opStorage);
+			gameTest = Game(game);
+			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
+			std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
+			if (conditionsSatisfiedTest[toSatisfy] == true)
+			{
+				toOperate.push_back(opStorage);
+				toOperateAdded = true;
+				break;
+			}
 		}
 	}
 	while (true)
@@ -102,9 +108,9 @@ bool Handler::Satisfy()
 		for (OperatorStorage opStorage : legalOperators)
 		{
 			gameTest = Game(game);
-			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2]);
+			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
 			bool physical;
-			if (toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical),true)
+			if (toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical))
 			{
 				toOperate.push_back(opStorage);
 				for (int i = toOperate.size() - 1; i >= 0; i--)
@@ -136,7 +142,7 @@ bool Handler::Satisfy()
 
 bool Handler::AddGoalOperators(int iterations)
 {
-	std::cout << iterations << '\n';
+	std::cout << "AddGoal " << iterations << '\n';
 	std::vector<int> locations = std::vector<int>();
 	std::vector<OperatorStorage> toOperateLocal;
 	/*if (iterations = 1)
@@ -185,7 +191,7 @@ bool Handler::AddGoalOperators(int iterations)
 		gameTest = Game(game);
 		for (int j = 0; j < iterations; j++)
 		{
-			toOperateLocal[i + j].op->Operate(gameTest.objects[toOperateLocal[i + j].iterator1], gameTest.objects[toOperateLocal[i + j].iterator2], false);
+			toOperateLocal[i + j].op->Operate(gameTest.objects[toOperateLocal[i + j].iterator1], gameTest.objects[toOperateLocal[i + j].iterator2], true);
 			bool physical;
 			if ((j + 1) < iterations)
 			{

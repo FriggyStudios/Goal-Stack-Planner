@@ -43,6 +43,9 @@ void PickUp::Operate(Object* block1, Object* block2, bool test)
 		}
 		block1->inHand = block2;
 		block2->inHand = block1;
+
+		if (!test)
+			std::cout << "Pick up " << block1->name << '\n';
 	}
 	else
 		std::cerr << "PickUp Error";

@@ -5,17 +5,21 @@ Game::Game()
 {
 	Hand* hand = new Hand();
 	Table* table = new Table();
-	Block* A = new Block();
-	Block* B = new Block();
-	Block* C = new Block();
+	Block* A = new Block("A");
+	Block* B = new Block("B");
+	Block* C = new Block("C");
+	Block* D = new Block("D");
 
 	B->above = A;
 	A->below = B;
+	A->above = D;
+	D->below = A;
 	
 	objects = std::vector<Object*>();
 	objects.push_back(A);
 	objects.push_back(B);
 	objects.push_back(C);
+	objects.push_back(D);
 	objects.push_back(hand);
 	objects.push_back(table);
 
@@ -34,7 +38,7 @@ Game::Game(Game &game)
 	objects = std::vector<Object*>();
 	for (unsigned i = 0; i < game.objects.size()-2; i++)
 	{
-		objects.push_back(new Block());
+		objects.push_back(new Block(game.objects[i]->name));
 	}
 	objects.push_back(new Hand());
 	objects.push_back(new Table());
@@ -72,6 +76,10 @@ Game::~Game()
 	{
 		delete obj;
 	}
+	for (Operator* obj : operators)
+	{
+		delete obj;
+	}
 }
 
 Game& Game::operator=(const Game& game)
@@ -95,7 +103,7 @@ Game& Game::operator=(const Game& game)
 	objects = std::vector<Object*>();
 	for (unsigned i = 0; i < game.objects.size() - 2; i++)
 	{
-		objects.push_back(new Block());
+		objects.push_back(new Block(game.objects[i]->name));
 	}
 	objects.push_back(new Hand());
 	objects.push_back(new Table());
@@ -134,6 +142,7 @@ std::vector<bool> Game::conditionchecker()
 	conditionsSatisfied.push_back(condition1());
 	conditionsSatisfied.push_back(condition2());
 	conditionsSatisfied.push_back(condition3());
+	conditionsSatisfied.push_back(condition4());
 
 	return conditionsSatisfied;
 }
@@ -177,6 +186,16 @@ bool Game::condition3()
 	if (objects[0]->below == NULL &&
 		objects[0]->above == NULL &&
 		objects[0]->inHand == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+bool Game::condition4()
+{
+	if (objects[3]->below == NULL &&
+		objects[3]->above == NULL &&
+		objects[3]->inHand == NULL)
 	{
 		return true;
 	}
