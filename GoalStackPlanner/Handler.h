@@ -15,8 +15,8 @@ public:
 	Handler(Game game);
 	~Handler();
 	bool Satisfy();
-	int maxOperationsIteration = 10;
+	int maxOperationsIteration = 8;
 private:
-	bool AddGoalOperators(int iterations);
+	bool AddGoalOperators(int iterations, bool& illegal);
 };
 

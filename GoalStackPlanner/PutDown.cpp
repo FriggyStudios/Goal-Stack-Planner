@@ -32,12 +32,12 @@ bool PutDown::ValidOperator(const Object* block1, const Object* block2, bool &ph
 		return false;
 }
 
-void PutDown::Operate(Object* block1, Object* block2,bool test=false)
+void PutDown::Operate(Object* block1, Object* block2, bool test = false)
 {
 	bool physical;
-	if (test || ValidOperator(block1, block2,physical))
+	if (test || ValidOperator(block1, block2, physical))
 	{
-		if(block1->inHand)
+		if (block1->inHand)
 			block1->inHand->inHand = NULL;
 		block1->inHand = NULL;
 		if (block2->table == false)
@@ -53,5 +53,8 @@ void PutDown::Operate(Object* block1, Object* block2,bool test=false)
 			std::cout << "Put down " << block1->name << " onto " << block2->name << '\n';
 	}
 	else
-		std::cerr << "PutDown Error";
+	{
+		std::cout << "Put down " << block1->name << " onto " << block2->name << ' ';
+		std::cerr << "PutDown Error\n";
+	}
 }

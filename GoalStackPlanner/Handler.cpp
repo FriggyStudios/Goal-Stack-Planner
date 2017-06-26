@@ -121,12 +121,17 @@ bool Handler::Satisfy()
 				return game.satisfied();
 			}
 		}
-		for(int i = 2;i <= maxOperationsIteration;i++)
+		for(int i = 3;i <= maxOperationsIteration;i++)
 		{
+			bool illegal;
 			//Else Find illegal operator to satisfy unsatisfied goal state
-			if (AddGoalOperators(i))
+			if (AddGoalOperators(i, illegal))
 			{
 				return game.satisfied();
+			}
+			if (illegal)
+			{
+				i = 2;
 			}
 			if (i == maxOperationsIteration)
 			{
@@ -140,84 +145,145 @@ bool Handler::Satisfy()
 	return game.satisfied();
 }
 
-bool Handler::AddGoalOperators(int iterations)
+bool Handler::AddGoalOperators(int iterations, bool& illegal)
 {
-	std::cout << "AddGoal " << iterations << '\n';
-	std::vector<int> locations = std::vector<int>();
-	std::vector<OperatorStorage> toOperateLocal;
-	/*if (iterations = 1)
+	illegal = false;
+	//std::cout << "AddGoal " << iterations << '\n';
+	for (int legalfirst = -1; legalfirst < 1; legalfirst++)
 	{
-		toOperateLocal = illegalOperators;
-	}
-	else*/
-	for (int i = 0; i < iterations - 1; i++)
-	{
-		locations.push_back(0);
-	}
-	std::vector<OperatorStorage> operators;
-	operators.insert(operators.end(), legalOperators.begin(), legalOperators.end());
-	operators.insert(operators.end(), illegalOperators.begin(), illegalOperators.end());
-	int max = pow(operators.size(), iterations - 1);
-	for (OperatorStorage opStorage : legalOperators)
-	{
-		for (int k = 0; k < max; k++)
+		std::vector<int> locations = std::vector<int>();
+		std::vector<OperatorStorage> toOperateLocal;
+		/*if (iterations = 1)
 		{
-			toOperateLocal.push_back(opStorage);
-			for (int i = 0; i < iterations - 1; i++)
+			toOperateLocal = illegalOperators;
+		}
+		else*/
+		if (legalfirst == -1)
+		{
+			for (int i = 0; i < iterations + legalfirst; i++)
 			{
-				toOperateLocal.push_back(operators[locations[i]]);
+				locations.push_back(0);
 			}
-			for (int j = locations.size() - 1; j >= 0; j--)
+			std::vector<OperatorStorage> operators;
+			operators.insert(operators.end(), legalOperators.begin(), legalOperators.end());
+			operators.insert(operators.end(), illegalOperators.begin(), illegalOperators.end());
+			int max = pow(operators.size(), iterations + legalfirst);
+			for (OperatorStorage op : legalOperators)
 			{
-				if (locations[j] != operators.size() - 1)
+				toOperateLocal.push_back(op);
+				for (int k = 0; k < max; k++)
 				{
-					locations[j]++;
-					break;
-				}
-				else
-				{
-					locations[j] = 0;
+					for (int i = 0; i < iterations + legalfirst; i++)
+					{
+						toOperateLocal.push_back(operators[locations[i]]);
+					}
+					for (int j = locations.size() - 1; j >= 0; j--)
+					{
+						if (locations[j] != operators.size() - 1)
+						{
+							locations[j]++;
+							break;
+						}
+						else
+						{
+							locations[j] = 0;
+						}
+					}
 				}
 			}
 		}
-	}
-	if (iterations == 2)
-	{
-		int x = 3;
-	}
-	for (int i = 0; i < toOperateLocal.size() - 1; i += iterations)
-	{
-		bool legal = true;
-		gameTest = Game(game);
-		for (int j = 0; j < iterations; j++)
+		else
 		{
-			toOperateLocal[i + j].op->Operate(gameTest.objects[toOperateLocal[i + j].iterator1], gameTest.objects[toOperateLocal[i + j].iterator2], true);
-			bool physical;
-			if ((j + 1) < iterations)
+			locations.clear();
+			for (int i = 0; i < iterations; i++)
 			{
-				if (!toOperateLocal[i + j + 1].op->ValidOperator(gameTest.objects[toOperateLocal[i + j + 1].iterator1], gameTest.objects[toOperateLocal[i + j + 1].iterator2], physical))
+				locations.push_back(0);
+			}
+			std::vector<OperatorStorage> operators;
+			operators.insert(operators.end(), legalOperators.begin(), legalOperators.end());
+			operators.insert(operators.end(), illegalOperators.begin(), illegalOperators.end());
+			int max = pow(operators.size(), iterations);
+			for (int k = 0; k < max; k++)
+			{
+				for (int i = 0; i < iterations; i++)
+				{
+					toOperateLocal.push_back(operators[locations[i]]);
+				}
+				for (int j = locations.size() - 1; j >= 0; j--)
+				{
+					if (locations[j] != operators.size() - 1)
+					{
+						locations[j]++;
+						break;
+					}
+					else
+					{
+						locations[j] = 0;
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < toOperateLocal.size() - 1; i += iterations)
+		{
+			bool legal = true;
+			gameTest = Game(game);
+			for (int j = 0; j < iterations; j++)
+			{
+				toOperateLocal[i + j].op->Operate(gameTest.objects[toOperateLocal[i + j].iterator1], gameTest.objects[toOperateLocal[i + j].iterator2], true);
+				bool physical;
+				if ((j + 1) < iterations)
+				{ 
+					if (!toOperateLocal[i + j + 1].op->ValidOperator(gameTest.objects[toOperateLocal[i + j + 1].iterator1], gameTest.objects[toOperateLocal[i + j + 1].iterator2], physical))
+					{
+						legal = false;
+						break;
+					}
+				}
+				else if (!toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical))
 				{
 					legal = false;
-					break;
 				}
 			}
-			else if (!toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2],physical))
+			if (legal)
 			{
-				legal = false;
+				for (int i = toOperate.size() - 1; i >= 0; i--)
+				{
+					toOperate[i].op->Operate(gameTest.objects[toOperate[i].iterator1], gameTest.objects[toOperate[i].iterator2],true); 
+					bool physical;
+					if ((i - 1) >= 0)
+					{
+						if (!toOperate[i-1].op->ValidOperator(gameTest.objects[toOperate[i-1].iterator1], gameTest.objects[toOperate[i-1].iterator2],physical))
+						{
+							legal = false;
+							break;
+						}
+					}
+				}
+				if (legal)
+				{
+					for (int j = iterations - 1; j >= 0; j--)
+					{
+						toOperate.push_back(toOperateLocal[i + j]);
+					}
+					if (std::find(legalOperators.begin(), legalOperators.end(), toOperate.back()) != legalOperators.end())
+					{
+						for (int i = toOperate.size() - 1; i >= 0; i--)
+						{
+							toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
+						}
+						toOperate.clear();
+						return true;
+					}
+					else
+					{
+						illegal = true;
+						return false;
+					}
+				}
 			}
-		}
-		if (legal)
-		{
-			for (int j = iterations-1; j >= 0; j--)
-			{
-				toOperate.push_back(toOperateLocal[i + j]);
-			}
-			for (int i = toOperate.size() - 1; i >= 0; i--)
-			{
-				toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
-			}
-			return true;
 		}
 	}
+	illegal = false;
 	return false;
 }

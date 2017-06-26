@@ -48,5 +48,8 @@ void PickUp::Operate(Object* block1, Object* block2, bool test)
 			std::cout << "Pick up " << block1->name << '\n';
 	}
 	else
-		std::cerr << "PickUp Error";
+	{
+		std::cout << "Pick up " << block1->name << ' ';
+		std::cerr << "PickUp Error\n";
+	}
 }

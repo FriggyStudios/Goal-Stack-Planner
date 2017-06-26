@@ -11,5 +11,6 @@ public:
 public:
 	OperatorStorage(Operator *op, int iterator1, int iterator2);
 	~OperatorStorage();
+	bool operator==(const OperatorStorage& rhs);
 };
 
