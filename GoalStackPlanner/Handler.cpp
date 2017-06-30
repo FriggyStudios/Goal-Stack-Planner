@@ -1,22 +1,22 @@
 #include "Handler.h"
 #include <ctime> 
 #include <iostream>
+#include <thread> 
 
+std::mutex mtx;
 
 Handler::Handler(Game game)
 {
 	this->game = Game(game);
-	this->gameTest = this->game;
 	this->illegalOperators = std::vector<OperatorStorage>();
 	this->illegalOperators = std::vector<OperatorStorage>();
-	this->toOperate = std::vector<OperatorStorage>();
 }
 
 Handler::~Handler()
 {
 }
 
-Handler& Handler:: operator=(const Handler& other)
+Handler& Handler::operator=(const Handler& other)
 {
 	if (this == &other)
 		return (*this); // Taking care for self-assignment
@@ -24,10 +24,10 @@ Handler& Handler:: operator=(const Handler& other)
 	this->legalOperators = other.legalOperators;
 	this->illegalOperators = other.illegalOperators;
 	this->game = other.game;
-	this->gameTest = other.gameTest;
 	
 	return (*this);
 }
+
 
 //Satisfies one unsatisifed goal
 bool Handler::Satisfy()
@@ -42,7 +42,7 @@ bool Handler::Satisfy()
 	illegalOperators = std::vector<OperatorStorage>();
 	for (Operator* op : game.operators)
 	{
-		for(unsigned i = 0; i < game.objects.size();i++)
+		for (unsigned i = 0; i < game.objects.size(); i++)
 		{
 			for (unsigned j = 0; j < game.objects.size(); j++)
 			{
@@ -53,7 +53,7 @@ bool Handler::Satisfy()
 					{
 						legalOperators.push_back(OperatorStorage(op, i, j));
 					}
-					else if(physical)
+					else if (physical)
 					{
 						illegalOperators.push_back(OperatorStorage(op, i, j));
 					}
@@ -64,100 +64,38 @@ bool Handler::Satisfy()
 	//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
 	std::vector<bool> conditionsSatisfied = game.conditionchecker();
 	srand((unsigned)time(0));
-	int toSatisfy;
 	bool toOperateAdded = false;
-	while (!toOperateAdded)
+	threadSolved = false;
+	std::vector<std::thread> threads = std::vector<std::thread>();
+	for (int i = 0; i < conditionsSatisfied.size(); i++)
 	{
-		while (true)
+		if (conditionsSatisfied[i] == false)
 		{
-			toSatisfy = (rand() % conditionsSatisfied.size());
-			if (conditionsSatisfied[toSatisfy] == false)
-			{
-				break;
-			}
-		}
-		for (OperatorStorage opStorage : legalOperators)
-		{
-			gameTest = Game(game);
-			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
-			std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
-			if (conditionsSatisfiedTest[toSatisfy] == true)
-			{
-				opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
-				return game.satisfied();
-			}
-		}
-		//Else Find illegal operator to satisfy unsatisfied goal state
-		for (OperatorStorage opStorage : illegalOperators)
-		{
-			gameTest = Game(game);
-			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
-			std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
-			if (conditionsSatisfiedTest[toSatisfy] == true)
-			{
-				toOperate.push_back(opStorage);
-				toOperateAdded = true;
-				break;
-			}
+			threads.push_back(std::thread(&Handler::ThreadSolveGoal,this,i));
 		}
 	}
-	while (true)
+	for (int i = 0; i < threads.size(); i++)
 	{
-		//Set function to be satisfied that operator legal, repeat (2)
-		//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
-		for (OperatorStorage opStorage : legalOperators)
-		{
-			gameTest = Game(game);
-			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
-			bool physical;
-			if (toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical))
-			{
-				toOperate.push_back(opStorage);
-				for (int i = toOperate.size() - 1; i >= 0; i--)
-				{
-					toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
-				}
-				toOperate.clear();
-				return game.satisfied();
-			}
-		}
-		for(int i = 3;i <= maxOperationsIteration;i++)
-		{
-			bool illegal;
-			//Else Find illegal operator to satisfy unsatisfied goal state
-			if (AddGoalOperators(i, illegal))
-			{
-				return game.satisfied();
-			}
-			if (illegal)
-			{
-				i = 2;
-			}
-			if (i == maxOperationsIteration)
-			{
-				std::cerr << "AddGoalOperators called more than " << maxOperationsIteration << "times\n";
-			}
-		}
-
+		threads[i].join();
 	}
-	//If legal operators found to satisfy unsatisfied goal state, apply operators, repeat (1)
-
 	return game.satisfied();
 }
 
-bool Handler::AddGoalOperators(int iterations, bool& illegal)
+bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toOperate, bool& illegal)
 {
+	Game gameTest;
 	illegal = false;
 	//std::cout << "AddGoal " << iterations << '\n';
 	for (int legalfirst = -1; legalfirst < 1; legalfirst++)
 	{
 		std::vector<int> locations = std::vector<int>();
 		std::vector<OperatorStorage> toOperateLocal;
-		/*if (iterations = 1)
+		if (iterations == 1 && legalfirst == 0)
 		{
-			toOperateLocal = illegalOperators;
+			illegal = false;
+			return false;
 		}
-		else*/
+		else
 		if (legalfirst == -1)
 		{
 			for (int i = 0; i < iterations + legalfirst; i++)
@@ -226,6 +164,10 @@ bool Handler::AddGoalOperators(int iterations, bool& illegal)
 
 		for (int i = 0; i < toOperateLocal.size() - 1; i += iterations)
 		{
+			if (threadSolved)
+			{
+				return false;
+			}
 			bool legal = true;
 			gameTest = Game(game);
 			for (int j = 0; j < iterations; j++)
@@ -262,17 +204,17 @@ bool Handler::AddGoalOperators(int iterations, bool& illegal)
 				}
 				if (legal)
 				{
+					if (threadSolved)
+					{
+						return false;
+					}
+					threadSolved = true;
 					for (int j = iterations - 1; j >= 0; j--)
 					{
 						toOperate.push_back(toOperateLocal[i + j]);
 					}
 					if (std::find(legalOperators.begin(), legalOperators.end(), toOperate.back()) != legalOperators.end())
 					{
-						for (int i = toOperate.size() - 1; i >= 0; i--)
-						{
-							toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
-						}
-						toOperate.clear();
 						return true;
 					}
 					else
@@ -286,4 +228,97 @@ bool Handler::AddGoalOperators(int iterations, bool& illegal)
 	}
 	illegal = false;
 	return false;
+}
+
+void Handler::ThreadSolveGoal(int toSatisfy)
+{
+	Game gameTest;
+	std::vector<OperatorStorage> toOperate = std::vector<OperatorStorage>();
+	for (OperatorStorage opStorage : legalOperators)
+	{
+		gameTest = Game(game);
+		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
+		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
+		if (conditionsSatisfiedTest[toSatisfy] == true)
+		{
+			opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
+			threadSolved = true;
+			return;
+		}
+	}
+	//Else Find illegal operator to satisfy unsatisfied goal state
+	for (OperatorStorage opStorage : illegalOperators)
+	{
+		gameTest = Game(game);
+		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
+		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
+		if (conditionsSatisfiedTest[toSatisfy] == true)
+		{
+			toOperate.push_back(opStorage);
+		}
+	}
+	if (toOperate.size() == 0)
+	{
+		return;
+	}
+	while (true)
+	{
+		//Set function to be satisfied that operator legal, repeat (2)
+		//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
+		for (OperatorStorage opStorage : legalOperators)
+		{
+			gameTest = Game(game);
+			opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2],true);
+			bool physical;
+			if (toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical))
+			{
+				mtx.lock();
+				toOperate.push_back(opStorage); 
+				if (!threadSolved)
+				{
+					threadSolved = true;
+					for (int i = toOperate.size() - 1; i >= 0; i--)
+					{
+						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
+					}
+					toOperate.clear();
+				}
+				mtx.unlock();
+				return;
+			}
+		}
+		for(int i = 3;i <= maxOperationsIteration;i++)
+		{
+			bool illegal;
+			//Else Find illegal operator to satisfy unsatisfied goal state
+			if (AddGoalOperators(i, toOperate, illegal))
+			{
+				mtx.lock();
+				if (!threadSolved)
+				{
+					threadSolved = true;
+					for (int i = toOperate.size() - 1; i >= 0; i--)
+					{
+						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
+					}
+					toOperate.clear();
+				}
+				mtx.unlock();
+				return;
+			}
+			if (threadSolved)
+			{
+				return;
+			}
+			if (illegal)
+			{
+				i = 2;
+			}
+			if (i == maxOperationsIteration)
+			{
+				std::cerr << "AddGoalOperators called more than " << maxOperationsIteration << "times\n";
+			}
+		}
+
+	}
 }

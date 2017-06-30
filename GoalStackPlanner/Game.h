@@ -15,6 +15,7 @@ public:
 	Game(Game &game);
 	~Game();
 	Game& operator=(const Game& other);
+	bool operator==(const Game& other);
 	std::vector<bool> conditionchecker();
 	bool satisfied();
 private:
@@ -22,5 +23,9 @@ private:
 	bool condition2();
 	bool condition3();
 	bool condition4();
+	bool condition5();
+	bool condition6();
+	bool condition7();
+	bool condition8();
 };
 

@@ -9,17 +9,33 @@ Game::Game()
 	Block* B = new Block("B");
 	Block* C = new Block("C");
 	Block* D = new Block("D");
+	Block* E = new Block("E");
+	Block* F = new Block("F");
+	Block* G = new Block("G");
+	Block* H = new Block("H");
 
 	B->above = A;
 	A->below = B;
 	A->above = D;
 	D->below = A;
+	D->above = E;
+	E->below = D;
+	E->above = F;
+	F->below = E;
+	F->above = G;
+	G->below = F;
+	G->above = H;
+	H->below = G;
 	
 	objects = std::vector<Object*>();
 	objects.push_back(A);
 	objects.push_back(B);
 	objects.push_back(C);
 	objects.push_back(D);
+	objects.push_back(E);
+	objects.push_back(F);
+	objects.push_back(G);
+	objects.push_back(H);
 	objects.push_back(hand);
 	objects.push_back(table);
 
@@ -42,32 +58,33 @@ Game::Game(Game &game)
 	}
 	objects.push_back(new Hand());
 	objects.push_back(new Table());
-	for (unsigned i = 0; i < game.objects.size() - 2; i++)
+	for (unsigned i = 0; i < game.objects.size(); i++)
 	{
-		if (game.objects[i]->above != nullptr)
+		for (unsigned j = 0; j < game.objects.size(); j++)
 		{
-			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			if (game.objects[i]->above != nullptr)
 			{
 				if (game.objects[i]->above == game.objects[j])
 				{
 					objects[i]->above = objects[j];
-					break;
 				}
 			}
-		}
-		if (game.objects[i]->below != nullptr)
-		{
-			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			if (game.objects[i]->below != nullptr)
 			{
 				if (game.objects[i]->below == game.objects[j])
 				{
 					objects[i]->below = objects[j];
-					break;
+				}
+			}
+			if (game.objects[i]->inHand != nullptr)
+			{
+				if (game.objects[i]->inHand == game.objects[j])
+				{
+					objects[i]->inHand = objects[j];
 				}
 			}
 		}
 	}
-
 }
 
 Game::~Game()
@@ -109,31 +126,77 @@ Game& Game::operator=(const Game& game)
 	objects.push_back(new Table());
 	for (unsigned i = 0; i < game.objects.size() - 2; i++)
 	{
-		if (game.objects[i]->above != nullptr)
+		for (unsigned j = 0; j < game.objects.size(); j++)
 		{
-			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			if (game.objects[i]->above != nullptr)
 			{
 				if (game.objects[i]->above == game.objects[j])
 				{
 					objects[i]->above = objects[j];
-					break;
 				}
 			}
-		}
-		if (game.objects[i]->below != nullptr)
-		{
-			for (unsigned j = 0; j < game.objects.size() - 2; j++)
+			if (game.objects[i]->below != nullptr)
 			{
 				if (game.objects[i]->below == game.objects[j])
 				{
 					objects[i]->below = objects[j];
-					break;
+				}
+			}
+			if (game.objects[i]->inHand != nullptr)
+			{
+				if (game.objects[i]->inHand == game.objects[j])
+				{
+					objects[i]->inHand = objects[j];
 				}
 			}
 		}
 	}
+	return (*this);
+}
 
-	return (*this);
+bool Game::operator==(const Game& game)
+{
+	if (objects.size() != game.objects.size())
+	{
+		return false;
+	}
+	for (unsigned i = 0; i < game.objects.size() - 2; i++)
+	{
+		for (unsigned j = 0; j < game.objects.size(); j++)
+		{
+			if (game.objects[i]->above != nullptr)
+			{
+				if (game.objects[i]->above == game.objects[j])
+				{
+					if (objects[i]->above != objects[j])
+					{
+						return false;
+					}
+				}
+			}
+			if (game.objects[i]->below != nullptr)
+			{
+				if (game.objects[i]->below == game.objects[j])
+				{
+					if (objects[i]->below != objects[j])
+					{
+						return false;
+					}
+				}
+			}
+			if (game.objects[i]->inHand != nullptr)
+			{
+				if (game.objects[i]->inHand == game.objects[j])
+				{
+					if (objects[i]->inHand != objects[j])
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+	return true;
 }
 
 std::vector<bool> Game::conditionchecker()
@@ -143,6 +206,10 @@ std::vector<bool> Game::conditionchecker()
 	conditionsSatisfied.push_back(condition2());
 	conditionsSatisfied.push_back(condition3());
 	conditionsSatisfied.push_back(condition4());
+	conditionsSatisfied.push_back(condition5());
+	conditionsSatisfied.push_back(condition6());
+	conditionsSatisfied.push_back(condition7());
+	conditionsSatisfied.push_back(condition8());
 
 	return conditionsSatisfied;
 }
@@ -196,6 +263,46 @@ bool Game::condition4()
 	if (objects[3]->below == NULL &&
 		objects[3]->above == NULL &&
 		objects[3]->inHand == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+bool Game::condition5()
+{
+	if (objects[4]->below == NULL &&
+		objects[4]->above == NULL &&
+		objects[4]->inHand == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+bool Game::condition6()
+{
+	if (objects[5]->below == NULL &&
+		objects[5]->above == NULL &&
+		objects[5]->inHand == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+bool Game::condition7()
+{
+	if (objects[6]->below == NULL &&
+		objects[6]->above == NULL &&
+		objects[6]->inHand == NULL)
+	{
+		return true;
+	}
+	return false;
+}
+bool Game::condition8()
+{
+	if (objects[7]->below == NULL &&
+		objects[7]->above == NULL &&
+		objects[7]->inHand == NULL)
 	{
 		return true;
 	}
