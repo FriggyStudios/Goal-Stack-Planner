@@ -63,7 +63,6 @@ bool Handler::Satisfy()
 	}
 	//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
 	std::vector<bool> conditionsSatisfied = game.conditionchecker();
-	srand((unsigned)time(0));
 	bool toOperateAdded = false;
 	threadSolved = false;
 	std::vector<std::thread> threads = std::vector<std::thread>();
@@ -319,7 +318,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 			}
 			if (illegal)
 			{
-				i = 2;
+				i = 0;
 			}
 			if (i == maxOperationsIteration)
 			{

@@ -20,13 +20,13 @@ Game::Game(std::vector<StackBlocks> startState, std::vector<StackBlocks> goalSta
 		}
 		for (int i = 0; i < objectsLocal.size(); i++)
 		{
-			if (i != 0)
-			{
-				objectsLocal[i]->below = objectsLocal[i-1];
-			}
 			if (i != blocks.objects.size() - 1)
 			{
-				objectsLocal[i]->above = objectsLocal[i + 1];
+				objectsLocal[i]->below = objectsLocal[i + 1];
+			}
+			if (i != 0)
+			{
+				objectsLocal[i]->above = objectsLocal[i - 1];
 			}
 
 			objects.push_back(objectsLocal[i]);
@@ -49,7 +49,7 @@ Game::Game(Game &game)
 	operators.push_back(new PutDown());
 
 	objects = std::vector<Object*>();
-	for (unsigned i = 0; i < game.objects.size()-2; i++)
+	for (unsigned i = 0; i < game.objects.size() - 2; i++)
 	{
 		objects.push_back(new Block(game.objects[i]->name));
 	}
@@ -205,7 +205,6 @@ std::vector<bool> Game::conditionchecker()
 	{
 		for (int j = 0; j < goalState[i].objects.size(); j++)
 		{
-			bool ignoreConditions = false;
 			std::string blockName = goalState[i].objects[j];
 			std::string blockNameBelow;
 			std::string blockNameAbove;
@@ -224,9 +223,9 @@ std::vector<bool> Game::conditionchecker()
 			{
 				std::cerr << "Game Erorr: no matching block name";
 			}
-			if (j != 0)
+			if (j != goalState[i].objects.size() - 1)
 			{
-				blockNameBelow = goalState[i].objects[j - 1];
+				blockNameBelow = goalState[i].objects[j + 1];
 				for (Object* object : objects)
 				{
 					if (object->name == blockNameBelow)
@@ -259,9 +258,9 @@ std::vector<bool> Game::conditionchecker()
 					conditionsSatisfied.push_back(true);
 				}
 			}
-			if(j != goalState[i].objects.size()-1)
+			if (j != 0)
 			{
-				blockNameAbove = goalState[i].objects[j + 1];
+				blockNameAbove = goalState[i].objects[j - 1];
 				for (Object* object : objects)
 				{
 					if (object->name == blockNameAbove)

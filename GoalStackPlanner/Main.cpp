@@ -3,34 +3,21 @@
 #include "Handler.h"
 #include <ctime>
 
+std::vector<StackBlocks> RandomState(unsigned int blocksNum);
+
 int main()
 {
-	for (int i = 0; i < 1;i++)
+	srand((unsigned)time(0));
+	unsigned int blocksNum = 3;
+	//Multiple block worlds
+	for (int i = 0; i < 10;i++)
 	{
-		//start state
-		std::vector<std::string> startObjects1 = std::vector<std::string>();
-		startObjects1.push_back("D");
-		startObjects1.push_back("C");
-		startObjects1.push_back("B");
-		startObjects1.push_back("A");
-		StackBlocks startStack1 = StackBlocks(startObjects1);
-		std::vector<StackBlocks> startState = std::vector<StackBlocks>();
-		startState.push_back(startStack1);
-
-		//goal state
-		std::vector<std::string> goalObjects1 = std::vector<std::string>();
-		goalObjects1.push_back("A");
-		goalObjects1.push_back("B");
-		StackBlocks goalsStack1 = StackBlocks(goalObjects1);
-		std::vector<std::string> goalObjects2 = std::vector<std::string>();
-		goalObjects2.push_back("C");
-		goalObjects2.push_back("D");
-		StackBlocks goalsStack2 = StackBlocks(goalObjects2);
-		std::vector<StackBlocks> goalState = std::vector<StackBlocks>();
-		goalState.push_back(goalsStack1);
-		goalState.push_back(goalsStack2);
-
 		//init game and solution finder
+		std::cout << "Start State" << '\n';
+		std::vector<StackBlocks> startState = RandomState(blocksNum);
+		std::cout << "Goal State" << '\n';
+		std::vector<StackBlocks> goalState = RandomState(blocksNum);
+
 		Game game = Game(startState, goalState);
 		Handler handle = Handler(game);
 
@@ -46,4 +33,29 @@ int main()
 	int x;
 	std::cin >> x;
 	return 0;
+}
+
+std::vector<StackBlocks> RandomState(unsigned int blocksNum)
+{
+	int blockName = 1;
+	//start state
+	unsigned int blocksLeftNum = blocksNum;
+	std::vector<StackBlocks> state = std::vector<StackBlocks>();
+	while (blocksLeftNum > 0)
+	{
+		std::vector<std::string> stateObjects = std::vector<std::string>();
+		StackBlocks stack;
+		unsigned int stackBlocksNum = (rand() % blocksLeftNum) + 1;
+		blocksLeftNum -= stackBlocksNum;
+		for (int k = 0; k < stackBlocksNum; k++)
+		{
+			std::cout << blockName << '\n';
+			stateObjects.push_back(std::to_string(blockName++));
+		}
+		std::cout << '\n';
+		stack = StackBlocks(stateObjects);
+		state.push_back(stack);
+	}
+	std::cout << '\n';
+	return state;
 }

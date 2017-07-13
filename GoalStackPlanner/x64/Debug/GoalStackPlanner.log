@@ -1,4 +1,10 @@
-﻿  Main.cpp
-c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\main.cpp(38): warning C4244: 'initializing': conversion from 'clock_t' to 'float', possible loss of data
+﻿  Handler.cpp
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(108): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(118): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(143): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(150): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(192): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(285): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\test\desktop\goalstackplanner\goal-stack-planner\goalstackplanner\handler.cpp(306): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   GoalStackPlanner.vcxproj -> C:\Users\test\Desktop\GoalStackPlanner\Goal-Stack-Planner\x64\Debug\GoalStackPlanner.exe
   GoalStackPlanner.vcxproj -> C:\Users\test\Desktop\GoalStackPlanner\Goal-Stack-Planner\x64\Debug\GoalStackPlanner.pdb (Full PDB)
