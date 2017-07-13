@@ -5,13 +5,16 @@
 #include "PickUp.h"
 #include "PutDown.h"
 #include "Table.h"
+#include "StackBlocks.h"
 #include <vector>
 class Game
 {public:
 	std::vector<Object*> objects;
 	std::vector<Operator*> operators;
+	std::vector<StackBlocks> goalState;
 public:
 	Game();
+	Game(std::vector<StackBlocks> Startstate, std::vector<StackBlocks> goalState);
 	Game(Game &game);
 	~Game();
 	Game& operator=(const Game& other);
@@ -19,13 +22,5 @@ public:
 	std::vector<bool> conditionchecker();
 	bool satisfied();
 private:
-	bool condition1();
-	bool condition2();
-	bool condition3();
-	bool condition4();
-	bool condition5();
-	bool condition6();
-	bool condition7();
-	bool condition8();
 };
 

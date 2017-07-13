@@ -29,6 +29,7 @@
     <ClCompile Include="OperatorStorage.cpp" />
     <ClCompile Include="PickUp.cpp" />
     <ClCompile Include="PutDown.cpp" />
+    <ClCompile Include="StackBlocks.cpp" />
     <ClCompile Include="Table.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +42,7 @@
     <ClInclude Include="OperatorStorage.h" />
     <ClInclude Include="PickUp.h" />
     <ClInclude Include="PutDown.h" />
+    <ClInclude Include="StackBlocks.h" />
     <ClInclude Include="Table.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

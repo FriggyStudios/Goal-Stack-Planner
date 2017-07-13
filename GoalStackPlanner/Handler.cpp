@@ -78,6 +78,7 @@ bool Handler::Satisfy()
 	{
 		threads[i].join();
 	}
+	threadSolved = false;
 	return game.satisfied();
 }
 
@@ -234,18 +235,23 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 {
 	Game gameTest;
 	std::vector<OperatorStorage> toOperate = std::vector<OperatorStorage>();
-	for (OperatorStorage opStorage : legalOperators)
+	/*for (OperatorStorage opStorage : legalOperators)
 	{
 		gameTest = Game(game);
 		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
 		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
 		if (conditionsSatisfiedTest[toSatisfy] == true)
 		{
-			opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
-			threadSolved = true;
+			mtx.lock();
+			if (!threadSolved)
+			{
+				threadSolved = true;
+				opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
+			}
+			mtx.unlock();
 			return;
 		}
-	}
+	}*/
 	//Else Find illegal operator to satisfy unsatisfied goal state
 	for (OperatorStorage opStorage : illegalOperators)
 	{
@@ -294,6 +300,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 			if (AddGoalOperators(i, toOperate, illegal))
 			{
 				mtx.lock();
+
 				if (!threadSolved)
 				{
 					threadSolved = true;

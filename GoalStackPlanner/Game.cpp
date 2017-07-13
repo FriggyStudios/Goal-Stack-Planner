@@ -1,44 +1,41 @@
 #include "Game.h"
-
+#include <iostream>
 
 Game::Game()
 {
+	goalState = std::vector<StackBlocks>();
+	objects = std::vector<Object*>();
+}
+
+Game::Game(std::vector<StackBlocks> startState, std::vector<StackBlocks> goalState)
+{
+	this->goalState = goalState;
+	objects = std::vector<Object*>();
+	for (StackBlocks blocks : startState)
+	{
+		std::vector<Object*> objectsLocal = std::vector<Object*>();
+		for (std::string name : blocks.objects)
+		{
+			objectsLocal.push_back(new Block(name));
+		}
+		for (int i = 0; i < objectsLocal.size(); i++)
+		{
+			if (i != 0)
+			{
+				objectsLocal[i]->below = objectsLocal[i-1];
+			}
+			if (i != blocks.objects.size() - 1)
+			{
+				objectsLocal[i]->above = objectsLocal[i + 1];
+			}
+
+			objects.push_back(objectsLocal[i]);
+		}
+	}
 	Hand* hand = new Hand();
 	Table* table = new Table();
-	Block* A = new Block("A");
-	Block* B = new Block("B");
-	Block* C = new Block("C");
-	Block* D = new Block("D");
-	Block* E = new Block("E");
-	Block* F = new Block("F");
-	Block* G = new Block("G");
-	Block* H = new Block("H");
-
-	B->above = A;
-	A->below = B;
-	A->above = D;
-	D->below = A;
-	D->above = E;
-	E->below = D;
-	E->above = F;
-	F->below = E;
-	F->above = G;
-	G->below = F;
-	G->above = H;
-	H->below = G;
-	
-	objects = std::vector<Object*>();
-	objects.push_back(A);
-	objects.push_back(B);
-	objects.push_back(C);
-	objects.push_back(D);
-	objects.push_back(E);
-	objects.push_back(F);
-	objects.push_back(G);
-	objects.push_back(H);
 	objects.push_back(hand);
 	objects.push_back(table);
-
 	operators = std::vector<Operator*>();
 	operators.push_back(new PickUp());
 	operators.push_back(new PutDown());
@@ -46,7 +43,7 @@ Game::Game()
 
 Game::Game(Game &game)
 {
-
+	goalState = game.goalState;
 	operators = std::vector<Operator*>();
 	operators.push_back(new PickUp());
 	operators.push_back(new PutDown());
@@ -113,6 +110,7 @@ Game& Game::operator=(const Game& game)
 		delete op;
 	}
 
+	goalState = game.goalState;
 	operators = std::vector<Operator*>();
 	operators.push_back(new PickUp());
 	operators.push_back(new PutDown());
@@ -202,15 +200,110 @@ bool Game::operator==(const Game& game)
 std::vector<bool> Game::conditionchecker()
 {
 	std::vector<bool> conditionsSatisfied = std::vector<bool>();
-	conditionsSatisfied.push_back(condition1());
-	conditionsSatisfied.push_back(condition2());
-	conditionsSatisfied.push_back(condition3());
-	conditionsSatisfied.push_back(condition4());
-	conditionsSatisfied.push_back(condition5());
-	conditionsSatisfied.push_back(condition6());
-	conditionsSatisfied.push_back(condition7());
-	conditionsSatisfied.push_back(condition8());
 
+	for (int i = 0; i < goalState.size(); i++)
+	{
+		for (int j = 0; j < goalState[i].objects.size(); j++)
+		{
+			bool ignoreConditions = false;
+			std::string blockName = goalState[i].objects[j];
+			std::string blockNameBelow;
+			std::string blockNameAbove;
+			Object* block;
+			Object* blockBelow;
+			Object* blockAbove;
+			for (Object* object : objects)
+			{
+				if (object->name == blockName)
+				{
+					block = object;
+					break;
+				}
+			}
+			if (block == NULL)
+			{
+				std::cerr << "Game Erorr: no matching block name";
+			}
+			if (j != 0)
+			{
+				blockNameBelow = goalState[i].objects[j - 1];
+				for (Object* object : objects)
+				{
+					if (object->name == blockNameBelow)
+					{
+						blockBelow = object;
+						break;
+					}
+				}
+				if (blockBelow == NULL)
+				{
+					std::cerr << "Game Erorr: no matching block name";
+				}
+				if (block->below != blockBelow)
+				{
+					conditionsSatisfied.push_back(false);
+				}
+				else
+				{
+					conditionsSatisfied.push_back(true);
+				}
+			}
+			else
+			{
+				if (block->below != NULL)
+				{
+					conditionsSatisfied.push_back(false);
+				}
+				else
+				{
+					conditionsSatisfied.push_back(true);
+				}
+			}
+			if(j != goalState[i].objects.size()-1)
+			{
+				blockNameAbove = goalState[i].objects[j + 1];
+				for (Object* object : objects)
+				{
+					if (object->name == blockNameAbove)
+					{
+						blockAbove = object;
+						break;
+					}
+				}
+				if (blockAbove == NULL)
+				{
+					std::cerr << "Game Erorr: no matching block name";
+				}
+				if (block->above != blockAbove)
+				{
+					conditionsSatisfied.push_back(false);
+				}
+				else
+				{
+					conditionsSatisfied.push_back(true);
+				}
+			}
+			else
+			{
+				if (block->above != NULL)
+				{
+					conditionsSatisfied.push_back(false);
+				}
+				else
+				{
+					conditionsSatisfied.push_back(true);
+				}
+			}
+			if (block->inHand != NULL)
+			{
+				conditionsSatisfied.push_back(false);
+			}
+			else
+			{
+				conditionsSatisfied.push_back(true);
+			}
+		}
+	}
 	return conditionsSatisfied;
 }
 
@@ -226,85 +319,4 @@ bool Game::satisfied()
 		}
 	}
 	return true;
-}
-
-bool Game::condition1()
-{
-	if (objects[1]->below == NULL &&
-		objects[1]->above == objects[2] &&
-		objects[1]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition2()
-{
-	if (objects[2]->below == objects[1] &&
-		objects[2]->above == NULL &&
-		objects[2]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition3()
-{
-	if (objects[0]->below == NULL &&
-		objects[0]->above == NULL &&
-		objects[0]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition4()
-{
-	if (objects[3]->below == NULL &&
-		objects[3]->above == NULL &&
-		objects[3]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition5()
-{
-	if (objects[4]->below == NULL &&
-		objects[4]->above == NULL &&
-		objects[4]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition6()
-{
-	if (objects[5]->below == NULL &&
-		objects[5]->above == NULL &&
-		objects[5]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition7()
-{
-	if (objects[6]->below == NULL &&
-		objects[6]->above == NULL &&
-		objects[6]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
-}
-bool Game::condition8()
-{
-	if (objects[7]->below == NULL &&
-		objects[7]->above == NULL &&
-		objects[7]->inHand == NULL)
-	{
-		return true;
-	}
-	return false;
 }
