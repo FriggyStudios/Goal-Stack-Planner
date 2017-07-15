@@ -8,8 +8,10 @@ std::mutex mtx;
 Handler::Handler(Game game)
 {
 	this->game = Game(game);
+	this->legalOperators = std::vector<OperatorStorage>();
 	this->illegalOperators = std::vector<OperatorStorage>();
-	this->illegalOperators = std::vector<OperatorStorage>();
+	this->gameStates = std::vector<Game>();
+	gameStates.push_back(game);
 }
 
 Handler::~Handler()
@@ -23,6 +25,7 @@ Handler& Handler::operator=(const Handler& other)
 
 	this->legalOperators = other.legalOperators;
 	this->illegalOperators = other.illegalOperators;
+	this->gameStates = other.gameStates;
 	this->game = other.game;
 	
 	return (*this);
@@ -186,6 +189,16 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 				{
 					legal = false;
 				}
+				else
+				{
+					toOperate.back().op->Operate(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], true);
+					mtx.lock();
+					if (gameTest.EqualGame(gameStates))
+					{
+						legal = false;
+					}
+					mtx.unlock();
+				}
 			}
 			if (legal)
 			{
@@ -208,7 +221,6 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 					{
 						return false;
 					}
-					threadSolved = true;
 					for (int j = iterations - 1; j >= 0; j--)
 					{
 						toOperate.push_back(toOperateLocal[i + j]);
@@ -277,22 +289,29 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 			bool physical;
 			if (toOperate.back().op->ValidOperator(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], physical))
 			{
+				bool gameStateRepeat = false;
+				toOperate.back().op->Operate(gameTest.objects[toOperate.back().iterator1], gameTest.objects[toOperate.back().iterator2], true);
 				mtx.lock();
-				toOperate.push_back(opStorage); 
-				if (!threadSolved)
+				if (gameTest.EqualGame(gameStates))
+				{
+					gameStateRepeat = true;
+				}
+				if (!threadSolved && !gameStateRepeat)
 				{
 					threadSolved = true;
+					toOperate.push_back(opStorage);
 					for (int i = toOperate.size() - 1; i >= 0; i--)
 					{
 						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
 					}
 					toOperate.clear();
+					gameStates.push_back(game);
 				}
 				mtx.unlock();
 				return;
 			}
 		}
-		for(int i = 3;i <= maxOperationsIteration;i++)
+		for(int i = 1;i <= maxOperationsIteration;i++)
 		{
 			bool illegal;
 			//Else Find illegal operator to satisfy unsatisfied goal state
@@ -308,6 +327,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
 					}
 					toOperate.clear();
+					gameStates.push_back(game);
 				}
 				mtx.unlock();
 				return;
@@ -318,7 +338,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 			}
 			if (illegal)
 			{
-				i = 0;
+				//i = 2;
 			}
 			if (i == maxOperationsIteration)
 			{

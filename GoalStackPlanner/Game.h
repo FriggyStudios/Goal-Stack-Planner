@@ -15,10 +15,11 @@ class Game
 public:
 	Game();
 	Game(std::vector<StackBlocks> Startstate, std::vector<StackBlocks> goalState);
-	Game(Game &game);
+	Game(const Game &game);
 	~Game();
 	Game& operator=(const Game& other);
 	bool operator==(const Game& other);
+	bool EqualGame(const std::vector<Game>& gameStates);
 	std::vector<bool> conditionchecker();
 	bool satisfied();
 private:

@@ -9,6 +9,7 @@ private:
 	Game game;
 	std::vector<OperatorStorage> legalOperators;
 	std::vector<OperatorStorage> illegalOperators;
+	std::vector<Game> gameStates;
 	Handler& operator=(const Handler& other);
 	bool threadSolved;
 public:

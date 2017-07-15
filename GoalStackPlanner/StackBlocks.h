@@ -8,5 +8,6 @@ public:
 	StackBlocks(std::vector<std::string> objects);
 	StackBlocks();
 	~StackBlocks();
+	bool operator==(const StackBlocks& other);
 };
 

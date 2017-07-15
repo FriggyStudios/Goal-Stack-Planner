@@ -41,7 +41,7 @@ Game::Game(std::vector<StackBlocks> startState, std::vector<StackBlocks> goalSta
 	operators.push_back(new PutDown());
 }
 
-Game::Game(Game &game)
+Game::Game(const Game &game)
 {
 	goalState = game.goalState;
 	operators = std::vector<Operator*>();
@@ -49,15 +49,15 @@ Game::Game(Game &game)
 	operators.push_back(new PutDown());
 
 	objects = std::vector<Object*>();
-	for (unsigned i = 0; i < game.objects.size() - 2; i++)
+	for (unsigned int i = 0; i < game.objects.size() - 2; i++)
 	{
 		objects.push_back(new Block(game.objects[i]->name));
 	}
 	objects.push_back(new Hand());
 	objects.push_back(new Table());
-	for (unsigned i = 0; i < game.objects.size(); i++)
+	for (unsigned int i = 0; i < game.objects.size(); i++)
 	{
-		for (unsigned j = 0; j < game.objects.size(); j++)
+		for (unsigned int j = 0; j < game.objects.size(); j++)
 		{
 			if (game.objects[i]->above != nullptr)
 			{
@@ -172,6 +172,10 @@ bool Game::operator==(const Game& game)
 					}
 				}
 			}
+			else if (objects[i]->above != nullptr)
+			{
+				return false;
+			}
 			if (game.objects[i]->below != nullptr)
 			{
 				if (game.objects[i]->below == game.objects[j])
@@ -182,6 +186,10 @@ bool Game::operator==(const Game& game)
 					}
 				}
 			}
+			else if (objects[i]->below != nullptr)
+			{
+				return false;
+			}
 			if (game.objects[i]->inHand != nullptr)
 			{
 				if (game.objects[i]->inHand == game.objects[j])
@@ -191,6 +199,10 @@ bool Game::operator==(const Game& game)
 						return false;
 					}
 				}
+			}
+			else if (objects[i]->inHand != nullptr)
+			{
+				return false;
 			}
 		}
 	}
@@ -318,4 +330,16 @@ bool Game::satisfied()
 		}
 	}
 	return true;
+}
+
+bool Game::EqualGame(const std::vector<Game>& gameStates)
+{
+	for (Game gameState : gameStates)
+	{
+		if ((*this) == gameState)
+		{
+			return true;
+		}
+	}
+	return false;
 }

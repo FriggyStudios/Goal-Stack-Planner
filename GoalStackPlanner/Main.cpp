@@ -8,15 +8,41 @@ std::vector<StackBlocks> RandomState(unsigned int blocksNum);
 int main()
 {
 	srand((unsigned)time(0));
+	float totalTime = 0;
 	unsigned int blocksNum = 3;
+	unsigned int numIterations = 100;
 	//Multiple block worlds
-	for (int i = 0; i < 10;i++)
+	for (int i = 0; i < numIterations;i++)
 	{
-		//init game and solution finder
-		std::cout << "Start State" << '\n';
-		std::vector<StackBlocks> startState = RandomState(blocksNum);
-		std::cout << "Goal State" << '\n';
-		std::vector<StackBlocks> goalState = RandomState(blocksNum);
+		std::vector<StackBlocks> startState;
+		std::vector<StackBlocks> goalState;
+		bool statesSame = true;
+		while (statesSame)
+		{
+			//init game and solution finder
+			std::cout << "Start State" << '\n';
+			startState = RandomState(blocksNum);
+			std::cout << "Goal State" << '\n';
+			goalState = RandomState(blocksNum);
+			if (startState.size() != goalState.size())
+			{
+				statesSame = false;
+			}
+			else
+			{
+				for (int i = 0; i < startState.size(); i++)
+				{
+					if (!(startState[i] == goalState[i]))
+					{
+						statesSame = false;
+					}
+				}
+			}
+			if (statesSame)
+			{
+				std::cout << "Same states made, redoing states\n\n";
+			}
+		}
 
 		Game game = Game(startState, goalState);
 		Handler handle = Handler(game);
@@ -26,10 +52,12 @@ int main()
 		//find solution
 		while (!handle.Satisfy());
 		float time = clock() - begin;
+		totalTime += time / CLOCKS_PER_SEC;
 		//print time
 		std::cout << "\nTook " << time / CLOCKS_PER_SEC << "s\n\n";
 	}
-
+	//print time
+	std::cout << "\nAverage time took " << totalTime / numIterations << "s\n\n";
 	int x;
 	std::cin >> x;
 	return 0;
