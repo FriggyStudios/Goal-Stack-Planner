@@ -1,3 +1,6 @@
+//Stores pointer to an operator
+//Stores indices of two objects, indices related to positions in a Game's objects vector
+
 #pragma once
 #include "Object.h"
 #include "Operator.h"

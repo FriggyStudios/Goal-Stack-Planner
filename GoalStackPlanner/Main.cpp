@@ -1,8 +1,14 @@
+//Executes handler on randomly generated Game game state of number of blocks blocksNum
+//Outputs each game initial and goal state
+//Outputs solution to game
+//Outputs time to solve each game and average time for blocksNum
+
 #include <string>
 #include <iostream>
 #include "Handler.h"
 #include <ctime>
 
+//Returns a random game state of number of blocks blocksNum
 std::vector<StackBlocks> RandomState(unsigned int blocksNum);
 
 int main()
@@ -10,9 +16,9 @@ int main()
 	srand((unsigned)time(0));
 	float totalTime = 0;
 	unsigned int blocksNum = 3;
-	unsigned int numIterations = 100;
+	unsigned int numIterations = 10;
 	//Multiple block worlds
-	for (int i = 0; i < numIterations;i++)
+	for (unsigned int i = 0; i < numIterations;i++)
 	{
 		std::vector<StackBlocks> startState;
 		std::vector<StackBlocks> goalState;
@@ -35,6 +41,7 @@ int main()
 					if (!(startState[i] == goalState[i]))
 					{
 						statesSame = false;
+						break;
 					}
 				}
 			}
@@ -48,7 +55,7 @@ int main()
 		Handler handle = Handler(game);
 
 		//measure solution time
-		float begin = clock();
+		float begin = (float)clock();
 		//find solution
 		while (!handle.Satisfy());
 		float time = clock() - begin;
@@ -75,7 +82,7 @@ std::vector<StackBlocks> RandomState(unsigned int blocksNum)
 		StackBlocks stack;
 		unsigned int stackBlocksNum = (rand() % blocksLeftNum) + 1;
 		blocksLeftNum -= stackBlocksNum;
-		for (int k = 0; k < stackBlocksNum; k++)
+		for (unsigned int k = 0; k < stackBlocksNum; k++)
 		{
 			std::cout << blockName << '\n';
 			stateObjects.push_back(std::to_string(blockName++));

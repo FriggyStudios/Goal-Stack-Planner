@@ -1,3 +1,5 @@
+//Operator to put an object onto another objects or the table
+
 #pragma once
 #include "Operator.h"
 class PutDown :

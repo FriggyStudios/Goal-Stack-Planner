@@ -1,3 +1,6 @@
+//Stores vector of strings
+//Represents the names of objects on a stack in a game state
+
 #pragma once
 #include <vector>
 #include "Object.h"

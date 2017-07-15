@@ -32,10 +32,8 @@ Game::Game(std::vector<StackBlocks> startState, std::vector<StackBlocks> goalSta
 			objects.push_back(objectsLocal[i]);
 		}
 	}
-	Hand* hand = new Hand();
-	Table* table = new Table();
-	objects.push_back(hand);
-	objects.push_back(table);
+	objects.push_back(new Hand());
+	objects.push_back(new Table());
 	operators = std::vector<Operator*>();
 	operators.push_back(new PickUp());
 	operators.push_back(new PutDown());

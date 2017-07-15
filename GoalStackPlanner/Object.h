@@ -1,3 +1,6 @@
+//Object parent class
+//Stores pointers to other objects to signify the object's state the other objects
+
 #pragma once
 #include <string>
 class Object

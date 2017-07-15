@@ -1,3 +1,5 @@
+//Opertaor to pick up an object into the hand
+
 #pragma once
 #include "Operator.h"
 class PickUp :

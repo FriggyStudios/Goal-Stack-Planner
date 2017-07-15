@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread> 
 
+//Mutexer to stop threads from interacting with each other
 std::mutex mtx;
 
 Handler::Handler(Game game)
@@ -21,7 +22,7 @@ Handler::~Handler()
 Handler& Handler::operator=(const Handler& other)
 {
 	if (this == &other)
-		return (*this); // Taking care for self-assignment
+		return (*this);
 
 	this->legalOperators = other.legalOperators;
 	this->illegalOperators = other.illegalOperators;
@@ -31,8 +32,6 @@ Handler& Handler::operator=(const Handler& other)
 	return (*this);
 }
 
-
-//Satisfies one unsatisifed goal
 bool Handler::Satisfy()
 {
 	if (game.satisfied())
@@ -84,10 +83,9 @@ bool Handler::Satisfy()
 	return game.satisfied();
 }
 
-bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toOperate, bool& illegal)
+bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toOperate)
 {
 	Game gameTest;
-	illegal = false;
 	//std::cout << "AddGoal " << iterations << '\n';
 	for (int legalfirst = -1; legalfirst < 1; legalfirst++)
 	{
@@ -95,7 +93,6 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 		std::vector<OperatorStorage> toOperateLocal;
 		if (iterations == 1 && legalfirst == 0)
 		{
-			illegal = false;
 			return false;
 		}
 		else
@@ -108,7 +105,7 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 			std::vector<OperatorStorage> operators;
 			operators.insert(operators.end(), legalOperators.begin(), legalOperators.end());
 			operators.insert(operators.end(), illegalOperators.begin(), illegalOperators.end());
-			int max = pow(operators.size(), iterations + legalfirst);
+			int max = (int)pow((int)operators.size(), iterations + legalfirst);
 			for (OperatorStorage op : legalOperators)
 			{
 				toOperateLocal.push_back(op);
@@ -118,7 +115,7 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 					{
 						toOperateLocal.push_back(operators[locations[i]]);
 					}
-					for (int j = locations.size() - 1; j >= 0; j--)
+					for (int j = (int)locations.size() - 1; j >= 0; j--)
 					{
 						if (locations[j] != operators.size() - 1)
 						{
@@ -143,14 +140,14 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 			std::vector<OperatorStorage> operators;
 			operators.insert(operators.end(), legalOperators.begin(), legalOperators.end());
 			operators.insert(operators.end(), illegalOperators.begin(), illegalOperators.end());
-			int max = pow(operators.size(), iterations);
+			int max = (int)pow((int)operators.size(), iterations);
 			for (int k = 0; k < max; k++)
 			{
 				for (int i = 0; i < iterations; i++)
 				{
 					toOperateLocal.push_back(operators[locations[i]]);
 				}
-				for (int j = locations.size() - 1; j >= 0; j--)
+				for (int j = (int)locations.size() - 1; j >= 0; j--)
 				{
 					if (locations[j] != operators.size() - 1)
 					{
@@ -202,7 +199,7 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 			}
 			if (legal)
 			{
-				for (int i = toOperate.size() - 1; i >= 0; i--)
+				for (int i = (int)toOperate.size() - 1; i >= 0; i--)
 				{
 					toOperate[i].op->Operate(gameTest.objects[toOperate[i].iterator1], gameTest.objects[toOperate[i].iterator2],true); 
 					bool physical;
@@ -231,14 +228,12 @@ bool Handler::AddGoalOperators(int iterations, std::vector<OperatorStorage>& toO
 					}
 					else
 					{
-						illegal = true;
 						return false;
 					}
 				}
 			}
 		}
 	}
-	illegal = false;
 	return false;
 }
 
@@ -246,24 +241,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 {
 	Game gameTest;
 	std::vector<OperatorStorage> toOperate = std::vector<OperatorStorage>();
-	/*for (OperatorStorage opStorage : legalOperators)
-	{
-		gameTest = Game(game);
-		opStorage.op->Operate(gameTest.objects[opStorage.iterator1], gameTest.objects[opStorage.iterator2], true);
-		std::vector<bool> conditionsSatisfiedTest = gameTest.conditionchecker();
-		if (conditionsSatisfiedTest[toSatisfy] == true)
-		{
-			mtx.lock();
-			if (!threadSolved)
-			{
-				threadSolved = true;
-				opStorage.op->Operate(game.objects[opStorage.iterator1], game.objects[opStorage.iterator2]);
-			}
-			mtx.unlock();
-			return;
-		}
-	}*/
-	//Else Find illegal operator to satisfy unsatisfied goal state
+	//Find illegal operator to satisfy unsatisfied goal state
 	for (OperatorStorage opStorage : illegalOperators)
 	{
 		gameTest = Game(game);
@@ -280,8 +258,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 	}
 	while (true)
 	{
-		//Set function to be satisfied that operator legal, repeat (2)
-		//Check if legal operator satisfies unsatisfied goal state and apply operator (2)
+		//Check if legal operator satisfies unsatisfied goal state and apply operator
 		for (OperatorStorage opStorage : legalOperators)
 		{
 			gameTest = Game(game);
@@ -300,7 +277,7 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 				{
 					threadSolved = true;
 					toOperate.push_back(opStorage);
-					for (int i = toOperate.size() - 1; i >= 0; i--)
+					for (int i = (int)toOperate.size() - 1; i >= 0; i--)
 					{
 						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
 					}
@@ -313,16 +290,14 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 		}
 		for(int i = 1;i <= maxOperationsIteration;i++)
 		{
-			bool illegal;
-			//Else Find illegal operator to satisfy unsatisfied goal state
-			if (AddGoalOperators(i, toOperate, illegal))
+			if (AddGoalOperators(i, toOperate))
 			{
 				mtx.lock();
 
 				if (!threadSolved)
 				{
 					threadSolved = true;
-					for (int i = toOperate.size() - 1; i >= 0; i--)
+					for (int i = (int)toOperate.size() - 1; i >= 0; i--)
 					{
 						toOperate[i].op->Operate(game.objects[toOperate[i].iterator1], game.objects[toOperate[i].iterator2]);
 					}
@@ -336,15 +311,10 @@ void Handler::ThreadSolveGoal(int toSatisfy)
 			{
 				return;
 			}
-			if (illegal)
-			{
-				//i = 2;
-			}
 			if (i == maxOperationsIteration)
 			{
 				std::cerr << "AddGoalOperators called more than " << maxOperationsIteration << "times\n";
 			}
 		}
-
 	}
 }
